@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Website CRUD Data</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    margin: 0;
+    padding: 30px;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px #0001;
+}
+
+h1 {
+    text-align: center;
+    color: #2563eb;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: white;
+}
+
+.btn-tambah {
+    background: #2563eb;
+}
+
+.btn-edit {
+    background: #f59e0b;
+}
+
+.btn-hapus {
+    background: #dc2626;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background: #2563eb;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.aksi {
+    display: flex;
+    gap: 5px;
+}
+
+@media(max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 15px;
+        overflow-x: auto;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Website Pengelolaan Data</h1>
+
+<h3>Form Input Data</h3>
+
+<form id="formData">
+
+    <div class="form-group">
+        <label>Nama</label>
+        <input type="text" id="nama"
+        placeholder="Masukkan nama" required>
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="email"
+        placeholder="Masukkan email" required>
+    </div>
+
+    <div class="form-group">
+        <label>Alamat</label>
+        <input type="text" id="alamat"
+        placeholder="Masukkan alamat" required>
+    </div>
+
+    <button type="submit" class="btn-tambah" id="tombol">
+        Tambahkan Data
+    </button>
+
+</form>
+
+<h3>Daftar Data</h3>
+
+<table>
+<thead>
+<tr>
+    <th>No</th>
+    <th>Nama</th>
+    <th>Email</th>
+    <th>Alamat</th>
+    <th>Aksi</th>
+</tr>
+</thead>
+
+<tbody id="daftarData"></tbody>
+</table>
+
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("data")) || [];
+let indexEdit = -1;
+
+const form = document.getElementById("formData");
+const nama = document.getElementById("nama");
+const email = document.getElementById("email");
+const alamat = document.getElementById("alamat");
+const daftarData = document.getElementById("daftarData");
+const tombol = document.getElementById("tombol");
+
+// MENYIMPAN DATA
+function simpan() {
+    localStorage.setItem("data", JSON.stringify(data));
+}
+
+// MENAMPILKAN DATA
+function tampilkanData() {
+    daftarData.innerHTML = "";
+
+    data.forEach((item, index) => {
+        const baris = document.createElement("tr");
+
+        [index + 1, item.nama, item.email, item.alamat]
+            .forEach(nilai => {
+                const td = document.createElement("td");
+                td.textContent = nilai;
+                baris.appendChild(td);
+            });
+
+        const aksi = document.createElement("td");
+        aksi.className = "aksi";
+
+        const edit = document.createElement("button");
+        edit.textContent = "Edit";
+        edit.className = "btn-edit";
+        edit.onclick = () => editData(index);
+
+        const hapus = document.createElement("button");
+        hapus.textContent = "Hapus";
+        hapus.className = "btn-hapus";
+        hapus.onclick = () => hapusData(index);
+
+        aksi.append(edit, hapus);
+        baris.appendChild(aksi);
+
+        daftarData.appendChild(baris);
+    });
+}
+
+// TAMBAH DAN EDIT DATA
+form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const dataBaru = {
+        nama: nama.value.trim(),
+        email: email.value.trim(),
+        alamat: alamat.value.trim()
+    };
+
+    if (indexEdit === -1) {
+        data.push(dataBaru);
+        alert("Data berhasil ditambahkan!");
+    } else {
+        data[indexEdit] = dataBaru;
+        alert("Data berhasil diedit!");
+        indexEdit = -1;
+        tombol.textContent = "Tambahkan Data";
+    }
+
+    simpan();
+    tampilkanData();
+    form.reset();
+});
+
+// EDIT DATA
+function editData(index) {
+    nama.value = data[index].nama;
+    email.value = data[index].email;
+    alamat.value = data[index].alamat;
+
+    indexEdit = index;
+    tombol.textContent = "Simpan Perubahan";
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+}
+
+// HAPUS DATA
+function hapusData(index) {
+    if (confirm("Yakin ingin menghapus data ini?")) {
+        data.splice(index, 1);
+        simpan();
+        tampilkanData();
+        alert("Data berhasil dihapus!");
+    }
+}
+
+// TAMPILKAN DATA SAAT WEBSITE DIBUKA
+tampilkanData();
+
+</script>
+
+</body>
+</html>
